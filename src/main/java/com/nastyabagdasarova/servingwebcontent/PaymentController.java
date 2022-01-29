@@ -97,35 +97,6 @@ public class PaymentController {
 		model.addAttribute("summ", summ.toString());
 		
 		
-
-		
-		
-		
-		/*
-		String mrh_login = "";
-		String mrh_pass1 = "";
-		int out_summ = summ;
-		int inv_id = 0;
-		String inv_desc = "";
-		
-		//$crc  = md5("$mrh_login:$out_summ:$inv_id:$mrh_pass1");
-		String crc;
-		try {
-			crc = MD5.md5(mrh_login+":"+out_summ+":"+inv_id+":"+mrh_pass1);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return "redirect:" + request.getScheme() +"://" + request.getServerName() + ":8080/payment/fail";
-		}
-		
-		int IsTest = 0;
-		
-		
-		String url = "https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin="+mrh_login+"&"
-				+ "OutSum="+out_summ+"&InvId="+inv_id+"&Description="+inv_desc+"&SignatureValue="+crc+"&IsTest="+IsTest;
-		model.addAttribute("url", url);
-		url = null;
-		*/
-		
 		PayPalClient payPalClient = new PayPalClient();
 		model.addAttribute("paypal_link", payPalClient.createPayment(summ.toString(), payment));
 		paymentService.save(payment);
@@ -149,32 +120,6 @@ public class PaymentController {
 	@GetMapping("/payment/result")
 	public String result(HttpServletRequest request) {
 		
-		/*
-		String mrh_pass2 = "";
-		
-		if(InvId == 0) {
-			return "no_id";
-		}
-		
-		//$my_crc = strtoupper(md5("$out_summ:$inv_id:$mrh_pass2"));
-		String crc = null;
-		try {
-			crc = (MD5.md5(OutSum+":"+InvId+":"+mrh_pass2)).toUpperCase();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return "error crypto\n";
-		}
-		//System.out.println("Подпись должна быть " + crc);
-		if(!crc.equals(SignatureValue)) {
-			//return "bad sign\n";
-		}
-		
-		
-		Paymentapp payment = paymentService.findByIdNotPayed(InvId);
-		if(payment == null) {
-			return "not_found";
-		}
-		*/
 		MainEventListener mainEventListener = new MainEventListener();
 		
 		User user = userService.findByUsername(authenticationFacade.getAuthentication().getName());
@@ -295,9 +240,6 @@ public class PaymentController {
 	public String success(Model model, HttpServletRequest request) {
 		String title = "Success payment " + FinalComponent.end_of_title;
 		model.addAttribute("title", title);
-		
-		//пример полученного
-		//paymentId=PAYID-L6R7TWI7ND792831P783010B&token=EC-5NB19182SN2074006&PayerID=CMD4C7DDA3YQS
 		
 		
 		
