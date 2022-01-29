@@ -22,8 +22,8 @@ public class EmailService  {
         mailSender.setHost("mail.stasymad.com");
         mailSender.setPort(465);
         
-        mailSender.setUsername("info@stasymad.com");
-        mailSender.setPassword("I2w3U6u5");
+        mailSender.setUsername("XXXXXXXXX");
+        mailSender.setPassword("XXXXXXXXX");
         mailSender.setDefaultEncoding("UTF-8");
         
         Properties props = mailSender.getJavaMailProperties();
@@ -40,25 +40,6 @@ public class EmailService  {
     
     public void sendSimpleMessage(String to, String subject, String text) throws MessagingException, IOException {
     	
-    	/*
-    	MimeMessage msg = javaMailSender.createMimeMessage();
-
-        // true = multipart message
-        MimeMessageHelper helper = new MimeMessageHelper(msg, false);
-
-        helper.setTo(to);
-        helper.setSubject(subject);
-        
-        // true = text/html
-        helper.setText("<h1>Check attachment for image!</h1>", true);
-
-		// hard coded a file path
-        //FileSystemResource file = new FileSystemResource(new File("path/android.png"));
-
-        //helper.addAttachment("my_photo.png", new ClassPathResource("android.png"));
-
-        javaMailSender.send(msg);
-        */
     	
     	JavaMailSender javaMailSender = getJavaMailSender();
     	
