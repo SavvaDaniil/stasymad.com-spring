@@ -1,0 +1,8 @@
+<security:http 
+  auto-config="true"
+  disable-url-rewriting="true" 
+  use-expressions="true">
+    <security:csrf />
+     
+    <!-- Remaining configuration ... -->
+</security:http>

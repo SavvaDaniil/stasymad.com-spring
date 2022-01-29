@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<body>
+
+
+
+
+<div class="row section_lk">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Шифрованный канал связи для: <span th:text="${subject_product_info}"></span> <br />
+          <b>Пользователь: </b> <span th:utext="${user.fio}"></span>
+        </li>
+			</ul>
+		</div>
+	</div>
+
+
+  <div class="d-none d-md-block col-3"></div>
+	<div class="col-12 col-lg-6 col-md-6 col-sm-12 row">
+
+    <div class="col-12 row" id="chatLoading">
+      <div class="col-12">
+        <center>
+          <img src="/images/loadingline.gif" class="img-fluid" />
+        </center>
+      </div>
+    </div>
+
+    <div class="col-12 row" id="chatContent">
+
+      <!--
+      <div class="col-12">
+        <div class="message client">
+          <p class="time">05.08.2020 15:00</p>
+          Вопрос пользователя
+          <p class="readed">Прочитано: 05.08.2020 15:01</p>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="message admin">
+          <p class="time">05.08.2020 16:00</p>
+          Ответ администратора
+        </div>
+      </div>
+      -->
+    </div>
+
+
+    <div class="col-12 row" id="chatControl">
+      <div class="col-12">
+        <hr />
+
+      </div>
+      <div class="col-12">
+        <textarea class="form-control" max-length="5000" rows="4" id="chatMessage" onkeypress="clearWarning()"></textarea>
+      </div>
+
+      <div class="col-12 col-lg-3 col-md-3 col-sm-12">
+        <button class="btn btn-success btn-block" id="chatSend" onclick="chatSend()">Отправить</button>
+      </div>
+
+      <div class="col-12 col-lg-9 col-md-9 col-sm-12">
+        <button class="btn btn-info" onclick="document,getElementById('chatFileVideo').click();">
+          <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-upload" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M.5 8a.5.5 0 0 1 .5.5V12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5a.5.5 0 0 1 1 0V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8.5A.5.5 0 0 1 .5 8zM5 4.854a.5.5 0 0 0 .707 0L8 2.56l2.293 2.293A.5.5 0 1 0 11 4.146L8.354 1.5a.5.5 0 0 0-.708 0L5 4.146a.5.5 0 0 0 0 .708z"/>
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0v-8A.5.5 0 0 1 8 2z"/>
+          </svg>
+        </button>
+        <i>*Отправляемый видеофайл не должен быть больше 200 Мб</i>
+      </div>
+    </div>
+    <div class="col-12" id="chatFileVideoContent">
+
+    </div>
+
+    <div class="col-12">
+      <p id="warning"></p>
+    </div>
+
+    <div class="divHide">
+		<form id="formVideo" enctype="multipart/form-data">
+			<input type="file" name="userfile" style="display:none" accept="video/mp4,video/x-m4v,video/*"
+			id="chatFileVideo" />
+		</form>
+    </div>
+
+
+
+
+
+
+  </div>
+
+
+</div>
+
+
+
+<script>
+var CHAT_id_of_product,CHAT_product;
+var CHAT_sendedname, CHAT_from_who;
+
+
+function readChatFileVideo(){
+	document.getElementById('chatFileVideoContent').innerHTML = "";
+	var fullPath = document.getElementById('chatFileVideo').value;
+	if (fullPath) {
+	    var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
+	    var filename = fullPath.substring(startIndex);
+	    if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+	        filename = filename.substring(1);
+	    }
+	    document.getElementById('chatFileVideoContent').innerHTML = filename + " - <a href='#' onclick='"+"clearChatFileVideo()"+"'>Удалить</a>"
+	}
+
+}
+function clearChatFileVideo(){
+	document.getElementById('chatFileVideoContent').innerHTML = "";
+	document.getElementById('chatFileVideo').value = "";
+}
+function buildChatContent(array){
+	document.getElementById('chatContent').innerHTML = "";
+	console.log(array);
+	var readed, classUnread;
+	for(var i = 0; i < array.length; i++){
+		if(array[i]["date_of_readed"] == null){
+			classUnread = "unread";
+			readed = "Непрочитано";
+		} else {
+			classUnread = "";
+			readed = "Прочитано:<br />" + array[i]["date_of_readed_to_print"];
+		}
+
+		if(array[i]["user0_admin1"] == 0){
+			document.getElementById('chatContent').innerHTML += '<div class="col-12">	<div class="message client '+classUnread+'"><p class="time">'+CHAT_from_who+' - '+array[i]["date_of_add_to_print"]+'</p>'+array[i]["message"]+'<p class="readed">'+readed+'</p></div></div>';
+		} else if(array[i]["user0_admin1"] == 1){
+			document.getElementById('chatContent').innerHTML += '<div class="col-12">	<div class="message admin '+classUnread+'"><p class="time">'+CHAT_sendedname+' - '+array[i]["date_of_add_to_print"]+'</p>'+array[i]["message"]+'<p class="readed">'+readed+'</p></div></div>';
+		}
+	}
+}
+
+function clearWarning(){
+	$("#warning").html("");
+}
+function chatLoad(id){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	CHAT_id_of_product = id;
+
+	$.ajax({
+		type: "POST",
+		url:  "/chat/adminindex",
+		data: {
+			"id_of_back":[[${back.id}]],
+			"id_of_user":[[${user.id}]],
+			"hash":"[[${hash}]]"
+		},
+		cashe: false,
+		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+		error:function(){
+			alert("Произошла ошибка соединения!");
+		},
+		success: function(html)
+		{
+
+			if(html["answer"] == "success"){
+				CHAT_sendedname = html["sendedname"];
+  			CHAT_from_who = html["from_who"];
+				buildChatContent(html["chat"]);
+				$("#warning").html("");
+				clearChatFileVideo();
+				$("#chatContent").css("display","flex");
+				$("#chatControl").css("display","flex");
+			} else if(html["answer"] == "error" && html["error"] == "no_access") {
+				$("#chatContent").css("display","none");
+				$("#chatControl").css("display","none");
+			}
+
+		}
+	});
+}
+
+
+
+function chatSend(){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	$("#chatFileVideoContent").css("display","none");
+	$("#chatControl").css("display","none");
+	$("#chatContent").css("display","none");
+	$("#chatLoading").css("display","block");
+
+	//var formData = new FormData();
+	//var formData = new FormData($('form')[1]);
+	var formData = new FormData($('#formVideo')[0]);
+
+
+	document.getElementById("chatSend").disabled = true;
+	$("#warning").html("");
+	
+	if(formData.get("userfile").size > 200000000){
+		$("#chatFileVideoContent").css("display","flex");
+		$("#chatControl").css("display","flex");
+		$("#chatContent").css("display","flex");
+		$("#chatLoading").css("display","none");
+		document.getElementById("chatSend").disabled = false;
+		$("#warning").html("Размер файла не должен быть больше 200МБ");
+		return;
+	}
+	
+	var message = document.getElementById("chatMessage").value.trim();
+	if(message == ""){
+		$("#chatFileVideoContent").css("display","flex");
+		$("#chatControl").css("display","flex");
+		$("#chatContent").css("display","flex");
+		$("#chatLoading").css("display","none");
+		document.getElementById("chatSend").disabled = false;
+		$("#warning").html("Введите пожалуйста сообщение");
+		return;
+	}
+	formData.append("message", message);
+	formData.append("id_of_back", [[${back.id}]]);
+	formData.append("id_of_user", [[${user.id}]]);
+	formData.append("hash", "[[${hash}]]");
+
+
+	if (document.getElementById("chatFileVideo").files.length != 0){
+	    //formData.append("userfile", $("#chatFileVideo")[0].files[0]);
+	}
+
+
+	$.ajax({
+    method: 'POST',
+		type: "POST",
+		url:  "/chat/adminsend",
+		data: formData,
+		cashe: false,
+    processData: false,
+    contentType: false,
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader(header, token);
+    },
+		error:function(){
+			$("#chatFileVideoContent").css("display","flex");
+			$("#chatControl").css("display","flex");
+			$("#chatContent").css("display","flex");
+			$("#chatLoading").css("display","none");
+			document.getElementById("chatSend").disabled = false;
+			alert("Произошла ошибка!");
+		},
+		success: function(html)
+		{
+			$("#chatFileVideoContent").css("display","flex");
+			$("#chatControl").css("display","flex");
+			$("#chatContent").css("display","flex");
+			$("#chatLoading").css("display","none");
+			document.getElementById("chatSend").disabled = false;
+
+			if(html["answer"] == "success"){
+				//очистка формы
+				document.getElementById("chatMessage").value = "";
+				document.getElementById("chatFileVideo").value = "";
+
+
+				//обновляем диалог
+				chatLoad(CHAT_id_of_product, CHAT_product);
+
+			} else if(html["answer"] == "error" && html["error"] == "no_access") {
+
+				$("#warning").html("Истек доступ к обратной связи");
+			} else if(html["answer"] == "error" && html["error"] == "wait_of_answer") {
+				$("#warning").html("Подождите пожалуйста ответа непрочитанных сообщений");
+			} else if(html["answer"] == "error" && html["error"] == "no_data") {
+				$("#warning").html("Извините, произошла ошибка на сервере");
+			} else if(html["answer"] == "error" && html["error"] == "wrong_check") {
+				$("#warning").html("Извините, видеофайл не распознан, либо файл больше 200 мб");
+			} else {
+				$("#warning").html("Извините, неизвестная ошибка на сервере");
+			}
+
+		}
+	});
+
+
+
+}
+
+window.onload = function(){
+  chatLoad([[${back.id_of_course}]]);
+
+	$("#chatFileVideo").change(function() {
+		readChatFileVideo()
+	});
+
+}
+</script>
+
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

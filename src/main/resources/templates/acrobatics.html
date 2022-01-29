@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+<div class="row section_acrobatics">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Акробатика</li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-12">
+		<div class="filter">
+			<ul>
+				<li class="active" onclick="filter(0)"><p>Все</p></li>
+				<li onclick="filter(1)"><p>Начинающие</p></li>
+				<li onclick="filter(2)"><p>Продолжающие</p></li>
+			</ul>
+		</div>
+	</div>
+	<!-- <img th:src="@{/uploads/cart.png}"/>-->
+	
+
+	<div class="col-12 row" th:each="acrobatics : ${acrobaticsList}">
+		<div class="block col-12 row" th:classappend="${(acrobatics.beginner == 1 ? 'beginner' : '') + (acrobatics.intermediate == 1 ? 'intermediate' : '')}">
+			<div class="col-5">
+				<img th:src="@{${acrobatics.posterSrc}}" class="img-fluid" />
+			</div>
+			<div class="col-6 info row">
+				<div class="col-12">
+					<h2 th:text="${acrobatics.name}"></h2>
+					
+					<p th:utext="${acrobatics.description}"></p>
+				</div>
+				
+				<div class="col-12 row bottom" th:if="${acrobatics.alreadyBuyed != 1}">
+					<div class="col-6 price">
+						<p>Без обратной связи
+							<span th:text="${acrobatics.price}"></span> руб / 
+							<span th:text="${acrobatics.days}"></span> дней
+						</p>
+					</div>
+					<div class="col-6 cart">
+						<button class="btn" th:attr="onclick=|add_to_cart('${acrobatics.id}', 'acrobatics', 0, 0)|">В корзину</button>
+					</div>
+					<div class="col-12 row" style="padding:0;margin:0;" th:if="${acrobatics.back != null}">
+						<div class="col-6 price">
+							<p>С обратной связи
+								<span th:text="${acrobatics.back.price}"></span> руб / 
+								<span th:text="${acrobatics.back.days}"></span> дней
+							</p>
+						</div>
+						<div class="col-6 cart">
+							<button class="btn" th:attr="onclick=|add_to_cart('${acrobatics.id}', 'acrobatics', 1, 0)|">В корзину</button>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-12 row bottom" th:if="${acrobatics.alreadyBuyed == 1}">
+					<div class="col-12 cart">
+						<a href="/lk">
+							<button class="btn alreadyBuyed">Уже приобретено</button>
+						</a>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+		
+	
+</div>
+
+
+
+<script>
+function filter(a){
+	var f = document.getElementsByClassName("filter")[0].querySelectorAll("li");
+	for (var i = 0; i < f.length; i++) {
+		f[i].classList.remove("active");
+	}
+	f[a].classList.add("active");
+
+	var c = document.getElementsByClassName("block");
+	for (var i = 0; i < c.length; i++) {
+		if(a == 0){
+			c[i].classList.remove("hide");
+		} else if(a == 1){
+			if(c[i].classList.contains("beginner")){
+				c[i].classList.remove("hide");
+			} else {
+				c[i].classList.add("hide");
+			}
+		} else if(a == 2){
+			if(c[i].classList.contains("intermediate")){
+				c[i].classList.remove("hide");
+			} else {
+				c[i].classList.add("hide");
+			}
+		}
+
+	}
+}
+</script>
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

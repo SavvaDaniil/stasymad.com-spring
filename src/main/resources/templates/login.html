@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+
+<div class="row section_login_reg">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Login</li>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="col-4"></div>
+	
+	<div class="col-12 col-lg-4 col-md-4 col-sm-12 row">
+		
+		<div class="col-12">
+			<center>
+				<img src="/images/logo.png" class="img-fluid" />
+			</center>
+			
+	        <div th:if="${param.error}" class="error">
+	            Wrong login or password
+	        </div>
+	        <div th:if="${param.logout}" class="error">
+	            You're logout
+	        </div>
+			
+			<form th:action="@{/login}" method="post">
+				<center>
+					<input type="email" name="username" class="form-control" placeholder="Email" maxlength="100" required />
+					
+					<input type="password" name="password" class="form-control" placeholder="Password" maxlength="100" required />
+					
+					<button type="submit" class="btn">Login</button>
+				</center>
+			</form>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p class="reg"><font>I have not account</font></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p align="left"><a href="/registration"><button class="btn reg">Registration</button></a></p>
+		</div>
+		
+		<div class="col-6" style="padding:0;">
+			<p class="reg"><font>Forget password?</font></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p align="left"><a href="/forget"><button class="btn reg">Password recovery</button></a></p>
+		</div>
+	
+	</div>
+	
+</div>
+
+
+
+
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

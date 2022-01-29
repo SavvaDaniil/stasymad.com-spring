@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{header :: headerFragment}"></head>
+<body>
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+<div class="row section_payment">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Processing request</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="col-12">
+    <center>
+      <h5 class="desc">Invoice is being formed, please wait ...<br />
+        The site will have to redirect you for payment<br />
+        <br />
+        If this does not happen, please click on <a th:href="${paypal_link.redirect_url}">link</a>
+        
+        
+      </h5>
+    </center>
+
+  </div>
+
+<script>
+window.onload = function(){
+  //location.href = "";
+}
+</script>
+
+<script th:inline="javascript">
+/*<![CDATA[*/    
+window.onload = function(){
+	location.href = [[${paypal_link.redirect_url}]];
+}
+/*]]>*/
+</script> 
+
+</div>
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+</body>
+</html>

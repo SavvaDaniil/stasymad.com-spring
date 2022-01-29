@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<body>
+
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+
+
+
+<div class="row section_lk">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Account</li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-12">
+		<div class="filter_lk">
+			<ul class="nav">
+				<li>
+					<a class="active" data-toggle="tab" href="#strip" role="tab" aria-controls="nav-strip" aria-selected="true">
+						Strip
+					</a>
+				</li>
+				<li>
+					<a data-toggle="tab" href="#exotic" role="tab" aria-controls="nav-exotic" aria-selected="true">Exotic</a>
+				</li>
+				<li>
+					<a data-toggle="tab" href="#acrobatics" role="tab" aria-controls="nav-acrobatics" aria-selected="true">Acrobatics</a>
+				</li>
+				<li>
+					<a data-toggle="tab" href="#profile" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	
+	
+	<div class="tab-content col-12 row">
+
+		<div class="tab-pane fade show active col-12 row" id="strip" role="tabpanel" aria-labelledby="nav-strip-tab">
+
+			<div class="main row col-12">
+			
+				<div class="col-12" th:if="${stripList == null || #lists.isEmpty(stripList)}">
+					<center class="no_content">
+						<i>- You don't have paid strip content -</i>
+					</center>
+				</div>
+				
+				<div th:include="~{account_course :: account_courseFragment(${stripList})}"></div>
+					
+
+			</div>
+
+
+		</div>
+
+
+		<div class="tab-pane fade col-12 row" id="exotic" role="tabpanel" aria-labelledby="nav-exotic-tab">
+			<div class="main row">
+			
+				<div class="col-12" th:if="${exoticList == null || #lists.isEmpty(exoticList)}">
+					<center class="no_content">
+						<i>- You don't have paid exotic content -</i>
+					</center>
+				</div>
+				
+				<div th:include="~{account_course :: account_courseFragment(${exoticList})}"></div>
+					
+			</div>
+		</div>
+
+
+		<div class="tab-pane fade col-12 row" id="acrobatics" role="tabpanel" aria-labelledby="nav-acrobatics-tab">
+			<div class="main row">
+			
+				<div class="col-12" th:if="${acrobaticsList == null || #lists.isEmpty(acrobaticsList)}">
+					<center class="no_content">
+						<i>- You don't have paid acrobatics -</i>
+					</center>
+				</div>
+				
+				<div th:include="~{account_course :: account_courseFragment(${acrobaticsList})}"></div>
+					
+			</div>
+		</div>
+
+
+	  <div class="tab-pane fade col-12 row" id="profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+			<div class="row">
+				<div class="col-12 col-lg-4 col-md-4 col-sm-12 profile">
+					<form id="form_profile">
+						<label>Login / Email:</label>
+						<input type="email" class="form-control" th:value="${user.username}"
+						maxlength="150" name="username" id="username" onkeypress="clear_warning(this.id)" />
+						<label>Name:</label>
+						<input type="text" class="form-control" th:value="${user.fio}"
+						maxlength="150" name="fio" id="fio" onkeypress="clear_warning(this.id)" />
+						<hr />
+						<label>Change password:</label>
+						<input type="password" class="form-control" maxlength="150" name="new_password" id="new_password"
+						onkeypress="clear_warning(this.id)" />
+						<label>Confirm password:</label>
+						<input type="password" class="form-control" maxlength="150" name="new_password_confirm" id="new_password_confirm"
+						onkeypress="clear_warning(this.id)" />
+						<label>Current password:</label>
+						<input type="password" class="form-control" maxlength="150" name="password" id="password"
+						onkeypress="clear_warning(this.id)" />
+
+						<button type="button" class="btn btn-success" onclick="save()">Save</button>
+						<p id="profile_warning"></p>
+					</form>
+				</div>
+			</div>
+		</div>
+
+	</div>
+		
+	
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+function save(){
+	var formData = new FormData(document.getElementById("form_profile"));
+	var username = formData.get("username");
+	var fio = formData.get("fio");
+	var new_password = formData.get("new_password");
+	var new_password_confirm = formData.get("new_password_confirm");
+	var password = formData.get("password");
+	
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	
+
+	if(username == ""){
+		$("#profile_warning").html("Field 'login' cannot be empty");
+		change_input("username");
+	} else if(fio == "") {
+		$("#profile_warning").html("Field 'name' cannot be empty");
+		change_input("fio");
+	} else if(!(username.indexOf('@') + 1)){
+		$("#profile_warning").html("Mail entered incorrectly");
+		change_input("username");
+	} else if(new_password != "" && new_password != new_password_confirm) {
+		$("#profile_warning").html("Passwords must be match");
+		change_input("new_password_confirm");
+	} else if(new_password != "" && new_password == new_password_confirm && password == "") {
+		$("#profile_warning").html("Please enter current password");
+		change_input("password");
+	} else {
+		$.ajax({
+			type: "POST",
+			url:  "/rest/account/save",
+		    data:{
+		    	"username":username,
+		    	"fio":fio,
+		    	"new_password":new_password,
+		    	"new_password_confirm":new_password_confirm,
+		    	"password":password
+		    },
+			cashe: false,
+			async:false,
+	        beforeSend: function(xhr) {
+	            xhr.setRequestHeader(header, token);
+	        },
+			error:function(){
+				alert("Error connection!");
+				document.getElementById("btn_form").disabled = false;
+			},
+			success: function(html)
+			{
+		        if(html["answer"] == "success"){
+					$("#profile_warning").html("Success");
+		        } else if(html["answer"] == "error" && html["error"] == "username_already_exist"){
+		          $("#profile_warning").html("username already exist");
+		        } else if(html["answer"] == "error" && html["error"] == "wrong_password"){
+		          $("#profile_warning").html("Wrong current password");
+		        } else {
+		          $("#profile_warning").html("Unknown error on server!");
+		        }
+			}
+		});
+	}
+
+
+}
+
+function change_input(id){
+	$("#"+id).addClass("not_filled");
+}
+function clear_warning(id){
+	$("#"+id).removeClass("not_filled");
+	$("#profile_warning").html("");
+}
+
+</script>
+
+
+
+
+
+<div class="modal fade" id="chatModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chatModalHeader">
+					Feedback:
+				</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_video()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      			<div class="row">
+      				<div class="col-12">
+						<p id="warning"></p>
+					</div>
+				</div>
+				<div class="row" id="chatLoading">
+					<div class="col-12">
+						<center>
+							<img src="/images/loadingline.gif" class="img-fluid" />
+						</center>
+					</div>
+				</div>
+
+				<div class="row" id="chatNotBuyed">
+					<div class="col-12">
+						<center>
+							Sorry, but paid feedback has expired
+						</center>
+					</div>
+				</div>
+
+				<div class="row" id="chatContent">
+
+					<!--
+					<div class="col-12">
+						<div class="message client">
+							<p class="time">05.08.2020 15:00</p>
+							Вопрос пользователя
+							<p class="readed">Прочитано: 05.08.2020 15:01</p>
+						</div>
+					</div>
+
+					<div class="col-12">
+						<div class="message admin">
+							<p class="time">05.08.2020 16:00</p>
+							Ответ администратора
+						</div>
+					</div>
+					-->
+				</div>
+
+				<div class="row" id="chatControl">
+						<div class="col-12">
+							<hr />
+
+						</div>
+						<div class="col-12">
+							<textarea class="form-control" max-length="5000" rows="4" id="chatMessage" onkeypress="clearWarning()"></textarea>
+						</div>
+
+						<div class="col-12 col-lg-3 col-md-3 col-sm-12">
+							<button class="btn btn-success btn-block" id="chatSend" onclick="chatSend()">Send</button>
+						</div>
+
+						<div class="col-12 col-lg-9 col-md-9 col-sm-12">
+							<button class="btn btn-info" onclick="document,getElementById('chatFileVideo').click();">
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-upload" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+								  <path fill-rule="evenodd" d="M.5 8a.5.5 0 0 1 .5.5V12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5a.5.5 0 0 1 1 0V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8.5A.5.5 0 0 1 .5 8zM5 4.854a.5.5 0 0 0 .707 0L8 2.56l2.293 2.293A.5.5 0 1 0 11 4.146L8.354 1.5a.5.5 0 0 0-.708 0L5 4.146a.5.5 0 0 0 0 .708z"/>
+								  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0v-8A.5.5 0 0 1 8 2z"/>
+								</svg>
+							</button>
+							<i>*The uploaded video file must not be more than 200 MB</i>
+						</div>
+					</div>
+					<div class="col-12" id="chatFileVideoContent">
+
+					</div>
+
+					
+
+					<!--<input type="file" name="userfile" style="display:none" accept="video/mp4,video/x-m4v,video/*" id="chatFileVideo" />-->
+
+					<div class="divHide">
+						<form id="formVideo" enctype="multipart/form-data">
+							<input type="file" name="userfile" style="display:none" accept="video/mp4,video/x-m4v,video/*"
+							id="chatFileVideo" />
+						</form>
+					</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var CHAT_id_of_product,CHAT_product;
+var CHAT_sendedname;
+
+
+function readChatFileVideo(){
+	document.getElementById('chatFileVideoContent').innerHTML = "";
+	var fullPath = document.getElementById('chatFileVideo').value;
+	if (fullPath) {
+	    var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
+	    var filename = fullPath.substring(startIndex);
+	    if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+	        filename = filename.substring(1);
+	    }
+	    document.getElementById('chatFileVideoContent').innerHTML = filename + " - <a href='#' onclick='"+"clearChatFileVideo()"+"'>Delete</a>"
+	}
+
+}
+function clearChatFileVideo(){
+	document.getElementById('chatFileVideoContent').innerHTML = "";
+	document.getElementById('chatFileVideo').value = "";
+	document.getElementById('warning').innerHTML = "";
+}
+function buildChatContent(array){
+	document.getElementById('chatContent').innerHTML = "";
+	//console.log(array);
+	var readed, classUnread;
+	for(var i = 0; i < array.length; i++){
+		if(array[i]["date_of_readed"] == null){
+			classUnread = "unread";
+			readed = "Not read";
+		} else {
+			classUnread = "";
+			readed = "Read:<br />" + array[i]["date_of_readed_to_print"];
+		}
+
+		if(array[i]["user0_admin1"] == 0){
+			document.getElementById('chatContent').innerHTML += '<div class="col-12">	<div class="message client '+classUnread+'"><p class="time">Вы - '+array[i]["date_of_add_to_print"]+'</p>'+array[i]["message"]+'<p class="readed">'+readed+'</p></div></div>';
+		} else if(array[i]["user0_admin1"] == 1){
+			document.getElementById('chatContent').innerHTML += '<div class="col-12">	<div class="message admin '+classUnread+'"><p class="time">'+CHAT_sendedname+' - '+array[i]["date_of_add_to_print"]+'</p>'+array[i]["message"]+'<p class="readed">'+readed+'</p></div></div>';
+		}
+	}
+}
+
+function clearWarning(){
+	$("#warning").html("");
+}
+function chatLoad(id){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	CHAT_id_of_product = id;
+
+	$.ajax({
+		type: "GET",
+		url:  "/chat",
+		data: {
+			"id_of_course":id
+		},
+		cashe: false,
+		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+		error:function(){
+			alert("Error net connection!");
+		},
+		success: function(html)
+		{
+
+			if(html["answer"] == "success"){
+				CHAT_sendedname = html["sendedname"];
+				buildChatContent(html["chat"]);
+				$("#warning").html("");
+				clearChatFileVideo();
+				$("#chatNotBuyed").css("display","none");
+				$("#chatContent").css("display","flex");
+				$("#chatControl").css("display","flex");
+			} else if(html["answer"] == "error" && html["error"] == "no_access") {
+				$("#chatNotBuyed").css("display","flex");
+				$("#chatContent").css("display","none");
+				$("#chatControl").css("display","none");
+			}
+
+		}
+	});
+}
+
+
+
+function chatSend(){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	$("#chatFileVideoContent").css("display","none");
+	$("#chatControl").css("display","none");
+	$("#chatContent").css("display","none");
+	$("#chatLoading").css("display","block");
+
+	//var formData = new FormData();
+	//var formData = new FormData($('form')[1]);
+	var formData = new FormData($('#formVideo')[0]);
+
+	document.getElementById("chatSend").disabled = true;
+	$("#warning").html("");
+	
+	if(formData.get("userfile").size > 200000000){
+		$("#chatFileVideoContent").css("display","flex");
+		$("#chatControl").css("display","flex");
+		$("#chatContent").css("display","flex");
+		$("#chatLoading").css("display","none");
+		document.getElementById("chatSend").disabled = false;
+		$("#warning").html("File size should not more 200MB");
+		return;
+	}
+	
+	var message = document.getElementById("chatMessage").value.trim();
+	if(message == ""){
+		$("#chatFileVideoContent").css("display","flex");
+		$("#chatControl").css("display","flex");
+		$("#chatContent").css("display","flex");
+		$("#chatLoading").css("display","none");
+		document.getElementById("chatSend").disabled = false;
+		$("#warning").html("Please enter your message");
+		return;
+	}
+	formData.append("message", message);
+	formData.append("id_of_content", CHAT_id_of_product);
+	formData.append("content", CHAT_product);
+
+
+	if (document.getElementById("chatFileVideo").files.length != 0){
+	    //formData.append("userfile", $("#chatFileVideo")[0].files[0]);
+	}
+
+
+	$.ajax({
+    method: 'POST',
+		type: "POST",
+		url:  "/chat/send",
+		data: formData,
+		cashe: false,
+    processData: false,
+    contentType: false,
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader(header, token);
+    },
+		error:function(){
+			$("#chatFileVideoContent").css("display","flex");
+			$("#chatControl").css("display","flex");
+			$("#chatContent").css("display","flex");
+			$("#chatLoading").css("display","none");
+			document.getElementById("chatSend").disabled = false;
+			alert("Error net connection!");
+		},
+		success: function(html)
+		{
+			$("#chatFileVideoContent").css("display","flex");
+			$("#chatControl").css("display","flex");
+			$("#chatContent").css("display","flex");
+			$("#chatLoading").css("display","none");
+			document.getElementById("chatSend").disabled = false;
+
+			if(html["answer"] == "success"){
+				document.getElementById("chatMessage").value = "";
+				document.getElementById("chatFileVideo").value = "";
+
+
+				chatLoad(CHAT_id_of_product);
+
+			} else if(html["answer"] == "error" && html["error"] == "no_access") {
+				$("#chatNotBuyed").css("display","block");
+				$("#chatNotBuyed").css("chatControl","none");
+				$("#warning").html("Feedback expired");
+			} else if(html["answer"] == "error" && html["error"] == "wait_of_answer") {
+				$("#warning").html("Please wait for the reply of unread messages");
+			} else if(html["answer"] == "error" && html["error"] == "no_data") {
+				$("#warning").html("Sorry, there was an error on the server");
+			} else if(html["answer"] == "error" && html["error"] == "wrong_check") {
+				$("#warning").html("Sorry, the video file format is not recognized, or the file is larger than 200 MB");
+			} else {
+				$("#warning").html("Sorry, unknown server error");
+			}
+
+		}
+	});
+
+
+
+}
+</script>
+
+
+
+
+
+
+
+
+<div class="modal fade" id="modalVideo" tabindex="-1" role="dialog" aria-labelledby="videoModal" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="videoModalHeader">
+
+				</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_video()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+			<div class="row">
+				<div class="col-12" id="modalVideoJS">
+					<center>
+						<video-js id=vid1 width=600 height=300 class="vjs-default-skin" controls >
+						</video-js>
+					</center>
+				</div>
+				<div class="col-12" id="modalVideoJSNotReady">
+					<p><i>Your video content in progress. Please wait.<br />Date of activation not set until you start to watch</i></p>
+					<p>If something wrong, please right to us through  contacts or social network</p>
+				</div>
+				
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<p class="prev">
+						<button class="btn btn-info" id="video_prev" onclick="changeNumberOfVideo(0)">Prev</button>
+					</p>
+				</div>
+				<div class="col-6">
+					<p class="next">
+						<button class="btn btn-info" id="video_next" onclick="changeNumberOfVideo(1)">Next</button>
+					</p>
+				</div>
+			</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="close_video()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+window.onload = function(){
+	
+	$("#videoModal").on("hidden.bs.modal", function () {
+	    player.pause();
+	});
+	resizePlayer();
+	window.addEventListener('resize', function(){
+		resizePlayer();
+	});
+	$( "#chatFileVideo" ).change(function() {
+		readChatFileVideo()
+	});
+}
+
+var GLOBAL_id_of_content, GLOBAL_content, GLOBAL_number;
+var GLOBAL_array_of_content;
+
+function getvideo(id_of_content, number){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	if(GLOBAL_id_of_content == id_of_content){
+		$("#modalVideo").modal();
+		return;
+	}
+	GLOBAL_id_of_content = id_of_content;
+	GLOBAL_number = number - 1;
+
+	$.ajax({
+		type: "GET",
+		url:  "/account/getvideo",
+		data: {
+			"id_of_content":id_of_content,
+			"number":number
+		},
+		cashe: false,
+		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+		error:function(){
+			alert("Error net connection!");
+			document.getElementById("btn_form").disabled = false;
+		},
+		success: function(html)
+		{
+			if(html["answer"] == "success"){
+
+				GLOBAL_array_of_content = [];
+
+				for(var i = 0; i < html["content"].length; i++){
+					GLOBAL_array_of_content.push(html["content"][i]);
+				}
+
+				rebuildplayer();
+
+				loadSrcOfVideo(0);
+				
+				$("#modalVideo").modal();
+				
+				//player.play();
+
+			} else if(html["answer"] == "error" && html["error"] == "no_data"){
+				alert("Error sending data");
+			} else if(html["answer"] == "error" && html["error"] == "server_error"){
+				alert("Sorry, not content on server");
+			} else if(html["answer"] == "error" && html["error"] == "no_access"){
+				alert("Sorry, cannot find access for you");
+			} else {
+				alert("Sorry, unknown error on server!");
+			}
+		}
+	});
+}
+
+
+function loadSrcOfVideo(index){
+	
+	$("#modalVideoJS").removeClass("not_active");
+	$("#modalVideoJSNotReady").removeClass("active");
+	if(GLOBAL_array_of_content[index]["src"] == null && GLOBAL_array_of_content[index]["statusQRContent"] != "2"){
+		$("#modalVideoJS").addClass("not_active");
+		$("#modalVideoJSNotReady").addClass("active");
+		player.src({
+			type: 'application/x-mpegURL',
+			src: ""
+		});
+		return;
+	}
+	
+	player.src({
+		type: 'application/x-mpegURL',
+		src: GLOBAL_array_of_content[index]["src"]
+	});
+	
+	var subtitles = GLOBAL_array_of_content[index]["listOfSubtitle"];
+	if(subtitles != null){
+		subtitles.forEach(
+			function(subtitle, index, array){
+				if(subtitle["label"] == "English"){
+					player.addRemoteTextTrack({
+						src: subtitle["src"],
+						kind : subtitle["kind"],
+						label :subtitle["label"],
+						srclang : subtitle["srclang"],
+						language : subtitle["language"],
+						mode : "showing"
+					}, false);
+				} else {
+					player.addRemoteTextTrack({
+						src: subtitle["src"],
+						kind : subtitle["kind"],
+						label :subtitle["label"],
+						srclang : subtitle["srclang"],
+						language : subtitle["language"]
+					}, false);
+				}
+			}
+		);
+	}
+}
+
+function updatevideoplay(){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	$.ajax({
+		type: "GET",
+		url:  "/account/updatevideoplay",
+		data: {
+			"id_of_content":GLOBAL_id_of_content,
+			"number":(GLOBAL_number + 1)
+		},
+		cashe: false,
+		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+		error:function(){
+
+		},
+		success: function(html)
+		{
+
+		}
+	});
+}
+
+function resizePlayer(){
+	var w_max = window.innerWidth;
+
+	if(w_max > 768){
+		player.width(600);
+		player.height(300);
+	} else {
+		var new_width = w_max - 50;
+		var new_height = new_width*9/16;
+		player.width(new_width);
+		player.height(new_height);
+	}
+}
+
+function rebuildplayer(){
+	//console.log("GLOBAL_array_of_content.length = " + GLOBAL_array_of_content.length)
+	if(GLOBAL_array_of_content.length > 1){
+		document.getElementById("videoModalHeader").innerHTML = "Lesson №" + (GLOBAL_number + 1);
+
+
+
+		document.getElementById("video_prev").disabled = false;
+		document.getElementById("video_next").disabled = false;
+
+		document.getElementById("video_prev").style.display = "inline";
+		document.getElementById("video_next").style.display = "inline";
+		if(GLOBAL_number <= 0){
+			document.getElementById("video_prev").style.display = "none";
+		}
+		if(GLOBAL_number >= (GLOBAL_array_of_content.length - 1)){
+			document.getElementById("video_next").style.display = "none";
+		}
+		updatevideoplay();
+	} else {
+		document.getElementById("videoModalHeader").innerHTML = "";
+		//прячем все кнопки
+		document.getElementById("video_prev").style.display = "none";
+		document.getElementById("video_next").style.display = "none";
+		updatevideoplay();
+	}
+}
+
+function changeNumberOfVideo(a){
+	document.getElementById("video_prev").disabled = true;
+	document.getElementById("video_next").disabled = true;
+	player.pause();
+	for(var i = 0; i < GLOBAL_array_of_content.length; i++){
+		//console.log(GLOBAL_array_of_content[i]);
+	}
+
+
+	var next_video;
+
+	GLOBAL_number = parseInt(GLOBAL_number);
+
+	if(a == 0){
+		GLOBAL_number -= 1;
+
+
+		next_video = GLOBAL_array_of_content[GLOBAL_number];
+		//console.log("next_video = " + next_video);
+
+		loadSrcOfVideo(GLOBAL_number);
+		
+		rebuildplayer();
+	} else if(a == 1){
+		GLOBAL_number += 1;
+
+		next_video = GLOBAL_array_of_content[GLOBAL_number];
+
+		//console.log("next_video = " + next_video);
+
+		loadSrcOfVideo(GLOBAL_number);
+		
+		rebuildplayer();
+	}
+}
+</script>
+
+<link href="/video.js/dist/video-js.css" rel="stylesheet" type="text/css">
+<script src="/video.js/dist/video.js"></script>
+
+<script>
+var player = videojs('vid1', {
+	html5: {
+		hls: {
+			overrideNative: true
+		},
+		nativeAudioTracks: false,
+		nativeVideoTracks: false
+	}
+});
+
+
+player.preload();
+function close_video(){
+	player.pause();
+}
+
+
+</script>
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

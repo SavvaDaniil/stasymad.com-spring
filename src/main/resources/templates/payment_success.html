@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{header :: headerFragment}"></head>
+<body>
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+<div class="row section_payment">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Payment was successful</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="col-12">
+    <center>
+      <h5 class="desc"><b>Thank you for your purchase!</b><br /><br />
+        To go to view the training material, please go to <a href="/account">account</a> and open the desired tab<br />
+        <br />
+        If the payment went through, but the accesses were not open, please let us know by contacts or through social networks
+      </h5>
+    </center>
+
+  </div>
+
+
+</div>
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+</body>
+</html>

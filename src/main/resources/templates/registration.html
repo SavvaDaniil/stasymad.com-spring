@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+
+<div class="row section_login_reg">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Registration</li>
+			</ul>
+		</div>
+	</div>
+	
+	<div class="col-4"></div>
+	
+	<div class="col-12 col-lg-4 col-md-4 col-sm-12  row">
+		
+		<div class="col-12">
+			<center>
+				<img src="/images/logo.png" class="img-fluid" />
+			</center>
+			
+	        <div th:if="${message == 'username_already_exist'}" class="error">
+	            Username already exist
+	        </div>
+			
+	        <div th:if="${message == 'no_data'}" class="error">
+	            Please, feed all fields
+	        </div>
+			
+	        <div th:if="${message == 'unknown_error'}" class="error">
+	            Sorry, unknown error on server
+	        </div>
+	
+	
+			<form th:action="@{/registration}" method="post">
+				<center>
+					<input type="text" class="form-control" name="fio" placeholder="Your name" maxlength="100" required />
+					<input type="email" class="form-control" name="username" placeholder="Email" maxlength="100" required />
+					<button type="submit" class="btn">Registration</button>
+				</center>
+			</form>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p class="reg"><font>I have an account already</font></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p align="left"><a href="/login/"><button class="btn reg">Login</button></a></p>
+		</div>
+	
+	</div>
+	
+</div>
+
+
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

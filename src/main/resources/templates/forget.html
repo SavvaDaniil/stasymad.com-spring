@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+
+
+
+<div class="row section_login_reg">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Password recovery</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="d-none d-md-block col-4"></div>
+
+	<div class="col-12 col-lg-4 col-md-4 col-sm-12 row">
+
+		<div class="col-12">
+			<center>
+				<img src="/images/logo.jpg" class="img-fluid logo" />
+			</center>
+
+			<form action="#" id="forget_form_0">
+				<center>
+				<p>A 6-digit code will be sent to the specified mail</p>
+					<input type="email" class="form-control" placeholder="Enter email" maxlength="100" id="username" onkeypress="clear_warning()" />
+					
+					<button type="button" class="btn" id="btn_form" onclick="forget(0)">Send mail</button>
+				</center>
+			</form>
+
+			<form action="#" id="forget_form_1" style="display:none;">
+				<center>
+					<input type="text" class="form-control" placeholder="Enter the received code" maxlength="6" id="code" onkeypress="clear_warning()" />
+					
+					<button type="button" class="btn" onclick="forget(1)" id="send_code">Send code</button>
+					
+					<button type="button" class="btn cansel" onclick="cansel()">Cansel</button>
+				</center>
+			</form>
+
+			<center>
+        <p id="warning"></p>
+      </center>
+		</div>
+
+		<div class="col-6" style="padding:0;">
+			<p class="reg"><font>I have an account already</font></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p align="left"><a href="/login/"><button class="btn reg">Login</button></a></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p class="reg"><font>I have not account</font></p>
+		</div>
+		<div class="col-6" style="padding:0;">
+			<p align="left"><a href="/registration"><button class="btn reg">Registration</button></a></p>
+		</div>
+
+	</div>
+
+</div>
+
+
+
+
+<script>
+var code, hash, username;
+
+function forget(action){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	
+  username = document.getElementById("username").value.trim();
+  code = document.getElementById("code").value.trim();
+	document.getElementById("btn_form").disabled = true;
+  $("#send_code").show();
+  
+  var formData = new FormData();
+  if(action == 0){
+	  formData = new FormData(document.getElementById("forget_form_0"));
+  } else if(action == 1){
+	  formData = new FormData(document.getElementById("forget_form_1"));
+  }
+
+  if(username == "" && action == 0){
+    $("#warning").html("Enter please your login/email");
+		document.getElementById("btn_form").disabled = false;
+  } else if(code == "" && action == 1){
+    $("#warning").html("Please enter the received 6-digit code");
+		document.getElementById("btn_form").disabled = false;
+  } else if(!(username.indexOf('@') + 1)){
+    $("#warning").html("Mail entered incorrectly");
+		document.getElementById("btn_form").disabled = false;
+  } else {
+    $.ajax({
+			type: "POST",
+			url:  "/rest/forget",
+			data: {
+		        "action":action,
+		        "username":username,
+		        "code":code,
+		        "hash":hash
+		      },
+			cashe: false,
+			async:false,
+	        beforeSend: function(xhr) {
+	            xhr.setRequestHeader(header, token);
+	        },
+			error:function(){
+				alert("Error net connection!");
+				document.getElementById("btn_form").disabled = false;
+			},
+			success: function(html)
+			{
+		        if(action == 0 && html["answer"] == "success" && html["code"] != "" && html["hash"] != ""){
+							document.getElementById("btn_form").disabled = false;
+		          document.getElementById("forget_form_0").style.display = "none";
+		          document.getElementById("forget_form_1").style.display = "block";
+		          code = html["code"];
+		          hash = html["hash"];
+		        } else if(action == 1 && html["answer"] == "success"){
+		          location.href = "/account";
+		
+		        } else if(html["answer"] == "error"){
+		          switch(html["error"]){
+		            case "no_user":
+		              $("#warning").html("User is not found");
+		              break;
+		            case "please_wait_20":
+		              $("#warning").html("Too frequent requests, please try in 20 minutes");
+		              break;
+		            case "mail_error":
+		              $("#warning").html("Error with send mail");
+		              break;
+		            case "unknown_error":
+		              $("#warning").html("Sorry, there is an unknown error on the server");
+		              break;
+		            case "limit_try":
+		              $("#warning").html("Exhausted attempts, please start over");
+		              $("#send_code").hide();
+		              break;
+		            case "wrong_code_2":
+		              $("#warning").html("The code is incorrect, you have 2 attempts left");
+		              break;
+		            case "wrong_code_1":
+		              $("#warning").html("The code is incorrect, you have 1 attempt left");
+		              break;
+		            default:
+		              $("#warning").html("Sorry, there is an unknown error on the server");
+		              break;
+		          }
+		
+							document.getElementById("btn_form").disabled = false;
+		        } else {
+		          alert("Sorry, there is an unknown error on the server");
+							document.getElementById("btn_form").disabled = false;
+		        }
+			}
+		});
+  }
+}
+
+function clear_warning(){
+  $("#warning").html("");
+}
+function cansel(){
+  clear_warning();
+  document.getElementById("forget_form_0").style.display = "block";
+  document.getElementById("forget_form_1").style.display = "none";
+}
+</script>
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

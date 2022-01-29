@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+<div class="row section_content">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li th:text="@{#!strings.isEmpty(header)} ? ${header} : 'Courses' "></li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-12">
+		<div class="filter">
+			<ul>
+				<li class="active" onclick="filter(0)"><p>All</p></li>
+				<li onclick="filter(1)"><p>Beginners</p></li>
+				<li onclick="filter(2)"><p>Intermediate</p></li>
+			</ul>
+		</div>
+	</div>
+	<!-- <img th:src="@{/uploads/cart.png}"/>-->
+	
+	<div class="col-12 row emptyList" th:if="${courseList == null}">
+		<div class="col-12">
+			<p>Sorry, no content yet</p>
+		</div>
+	</div>
+
+	<div class="col-12 row" th:each="course : ${courseList}">
+		<div class="block col-12 row"
+		th:classappend="${(course.beginner == 1 ? 'beginner' : '') + (course.intermediate == 1 ? 'intermediate' : '')}">
+		
+		
+			<div class="col-12 col-lg-4 col-md-12 col-sm-12 video">
+				<img th:src="@{${course.posterOriginal}}" class="img-fluid posterOriginal" />
+				
+				<img src="/images/play.png"
+				th:if="${((course.original_inst1_youtube2 == 1) || (course.original_inst1_youtube2 == 2)) && course.srcOriginal != null}"
+				alt="play" class="img-fluid play"
+				th:attr="onclick=|openOriginal(${course.original_inst1_youtube2}, '${course.srcOriginal}')|" />
+				
+			</div>
+			<div class="col-12 col-lg-4 col-md-12 col-sm-12 row">
+				<div class="info">
+					<div class="col-12">
+						<h2 th:text="${course.name}"></h2>
+						
+						<p th:utext="${course.description}"></p>
+					</div>
+					
+					<div class="col-12 row bottom" th:if="${course.alreadyBuyed != 1}">
+						<div class="col-6 price">
+							<p>Without feedback
+								<span th:text="${course.price}"></span> $ / 
+								<span th:text="${course.days}"></span> days
+							</p>
+						</div>
+						<div class="col-6 cart">
+							<button class="btn" th:attr="onclick=|add_to_cart('${course.id}', 0, 0)|">In cart</button>
+						</div>
+						<div class="col-12 row" style="padding:0;margin:0;" th:if="${course.back != null}">
+							<div class="col-6 price">
+								<p>With feedback
+									<span th:text="${course.back.price}"></span> $ / 
+									<span th:text="${course.back.days}"></span> days
+								</p>
+							</div>
+							<div class="col-6 cart">
+								<button class="btn" th:attr="onclick=|add_to_cart('${course.id}', 1, 0)|">In cart</button>
+							</div>
+						</div>
+					</div>
+					
+				
+					<div class="col-12 row bottom" th:if="${course.alreadyBuyed == 1}">
+						<div class="col-12 cart">
+							<a href="/account">
+								<button class="btn alreadyBuyed">Already buyed</button>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-lg-4 col-md-12 col-sm-12 video">
+				<img th:src="@{${course.posterDemo}}" alt="poster" class="img-fluid posterDemo" />
+				<img src="/images/play.png"
+				th:if="${course.demo != null}"
+				alt="play" class="img-fluid play"
+				th:attr="onclick=|getDemo(${course.id})|" />
+			</div>
+		
+		
+		
+		</div>
+	</div>
+	
+</div>
+
+
+
+<script>
+//th:attr="onclick=|openDemo('${course.demo.srcVideo}', ${course.demo.id}, ${course.demo.listOfSubtitleDemo})|"
+function filter(a){
+	var f = document.getElementsByClassName("filter")[0].querySelectorAll("li");
+	for (var i = 0; i < f.length; i++) {
+		f[i].classList.remove("active");
+	}
+	f[a].classList.add("active");
+
+	var c = document.getElementsByClassName("block");
+	for (var i = 0; i < c.length; i++) {
+		if(a == 0){
+			c[i].classList.remove("hide");
+		} else if(a == 1){
+			if(c[i].classList.contains("beginner")){
+				c[i].classList.remove("hide");
+			} else {
+				c[i].classList.add("hide");
+			}
+		} else if(a == 2){
+			if(c[i].classList.contains("intermediate")){
+				c[i].classList.remove("hide");
+			} else {
+				c[i].classList.add("hide");
+			}
+		}
+
+	}
+}
+</script>
+
+
+<!-- Modal -->
+<div class="modal fade modalYoutube" id="modalYoutube" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeOriginal()">
+					<h2></h2><span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<iframe id="modalOriginalYoutubeSrc" src=""
+				frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				allowfullscreen></iframe>
+			</div>
+			
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="closeOriginal()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+var originalYoutube = false;
+function openOriginal(type,src){
+	if(type === 1 && src !== ""){
+		window.open(src);
+	} else if(type === 2){
+		//$("#modalOriginalYoutubeSrc").attr("src", "https://www.youtube.com/embed/"+src);
+		//$("#modalYoutube").modal();
+		//originalYoutube = true;
+		window.open("https://www.youtube.com/watch/?v="+src);
+	}
+}
+function closeOriginal(){
+	if(originalYoutube){
+		originalYoutube = false;
+		$("#modalOriginalYoutubeSrc").attr("src", "");
+	}
+}
+
+</script>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade modalVideo" id="modalDemo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="stopDemo()">
+					<h2></h2><span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<video-js id=vidDemo width=600 height=300 class="vjs-default-skin" controls >
+				
+				</video-js>
+			</div>
+			
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="stopDemo()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<link href="/video.js/dist/video-js.css" rel="stylesheet" type="text/css">
+<script src="/video.js/dist/video.js"></script>
+
+<script>
+
+var player = videojs('vidDemo');
+player.preload();
+
+function getDemo(id_of_course){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	$.ajax({
+		type: "POST",
+		url:  "/rest/course/demo/get",
+		data: {
+			"id_of_course":id_of_course
+		},
+		cashe: false,
+		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+		error:function(){
+			alert("Sorry, error net connection!");
+		},
+		success: function(html)
+		{
+			if(html["answer"] == "success"){
+				openDemo(html["demo"]["srcVideo"], html["demo"]["id"], html["demo"]["listOfSubtitleDemo"]);
+			} else if(html["answer"] == "error" && html["error"] == "no_data"){
+				alert("Sorry, error sending data");
+			} else if(html["answer"] == "error" && html["error"] == "not_found"){
+				alert("Sorry, can't find video source");
+			} else {
+				alert("Sorry, unknown error on server!");
+			}
+		}
+	});
+}
+
+var GLOBAL_demo = 0;
+var GLOBAL_listOfSubtitleDemo;
+function openDemo(src, id_of_demo, subtitles){
+	player.src({type: 'application/x-mpegURL', src: src});
+	//player.play();
+	//addTrackDemo(id_of_demo);
+	
+	if(subtitles != null){
+		subtitles.forEach(
+			function(subtitle, index, array){
+				if(subtitle["label"] == "English"){
+					player.addRemoteTextTrack({
+						src: subtitle["src"],
+						kind : subtitle["kind"],
+						label :subtitle["label"],
+						srclang : subtitle["srclang"],
+						language : subtitle["language"],
+						mode : "showing"
+					}, false);
+				} else {
+					player.addRemoteTextTrack({
+						src: subtitle["src"],
+						kind : subtitle["kind"],
+						label :subtitle["label"],
+						srclang : subtitle["srclang"],
+						language : subtitle["language"]
+					}, false);
+				}
+			}
+		);
+	}
+		
+	$("#modalDemo").modal();
+}
+function stopDemo(){
+	player.pause();
+}
+
+
+function addTrackDemo(subtitle, index, array){
+	
+	/*
+	const trackEl = player.addRemoteTextTrack({
+		src: "/public/track_demo/"+id_of_demo+"/english.vtt",
+		kind : "captions",
+		label : "English",
+		srclang : "en",
+		language : "English",
+		mode : "showing"
+	}, false);
+	
+	trackEl.addEventListener('load', function() {
+		
+	});
+	
+	player.addRemoteTextTrack({
+		src: "/public/track_demo/"+id_of_demo+"/china.vtt",
+		kind : "captions",
+		label : "中文",
+		srclang : "china",
+		language : "中文"
+	}, false);
+	
+	player.addRemoteTextTrack({
+		src: "/public/track_demo/"+id_of_demo+"/spain.vtt",
+		kind : "captions",
+		label : "Español",
+		srclang : "spain",
+		language : "Español"
+	}, false);
+	
+	player.addRemoteTextTrack({
+		src: "/public/track_demo/"+id_of_demo+"/deutch.vtt",
+		kind : "captions",
+		label : "Deutsche",
+		srclang : "deutch",
+		language : "Deutsche"
+	}, false);
+	
+	player.addRemoteTextTrack({
+		src: "/public/track_demo/"+id_of_demo+"/hungarian.vtt",
+		kind : "captions",
+		label : "Magyar",
+		srclang : "hungarian",
+		language : "Magyar"
+	}, false);
+	*/
+}
+
+</script>
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

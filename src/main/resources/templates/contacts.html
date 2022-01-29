@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:insert="~{header :: headerFragment}"></head>
+
+<body>
+
+
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+
+
+
+<div class="row contacts">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Contacts</li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-4 d-none d-md-block"></div>
+	<div class="col-12 col-lg-4 col-md-4 col-sm-12 block form" id="contactsBlockForm">
+		
+		<form id="contactForm">
+			<input type="email" name="mail" id="mail" maxlength="255" class="form-control" placeholder="Your email" onkeypress="clearWarning(this.id)" />
+			<input type="email" name="name" id="name" maxlength="255" class="form-control" placeholder="Your name" onkeypress="clearWarning(this.id)" />
+			<textarea class="form-control" name="message" id="message" maxlength="50000" placeholder="Your message" rows="10" onkeypress="clearWarning(this.id)"></textarea>
+			
+			<button type="button" class="btn btn-info" onclick="contacts()" id="contactsBtn">Send</button>
+		</form>
+	
+	</div>
+	
+	
+	<div class="col-12 col-lg-4 col-md-4 col-sm-12 success" id="successForm">
+		
+		<h4>We will try to answer you as soon as possible</h4>
+	
+	</div>
+	
+</div>
+
+
+
+
+
+<script>
+function contacts(){
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+
+	var formData = new FormData($('#contactForm')[0]);
+	
+	document.getElementById("contactsBtn").disabled = true;
+	
+	if(formData.get("mail") == ""){
+		$("#mail").addClass("not_filled");
+		document.getElementById("contactsBtn").disabled = false;
+		return;
+	}
+	if(formData.get("name") == ""){
+		$("#name").addClass("not_filled");
+		document.getElementById("contactsBtn").disabled = false;
+		return;
+	}
+	if(formData.get("message") == ""){
+		$("#message").addClass("not_filled");
+		document.getElementById("contactsBtn").disabled = false;
+		return;
+	}
+	
+	$.ajax({
+   	 method: 'POST',
+		type: "POST",
+		url:  "/contacts/send",
+		data: formData,
+		cashe: false,
+	    processData: false,
+	    contentType: false,
+	    beforeSend: function(xhr) {
+	        xhr.setRequestHeader(header, token);
+	    },
+		error:function(){
+			alert("Error net connection!");
+			document.getElementById("contactsBtn").disabled = false;
+		},
+		success: function(html)
+		{
+			if(html["answer"] == "success"){
+				$("#contactsBlockForm").addClass("not_active");
+				$("#successForm").addClass("active");
+			} else if(html["answer"] == "error" && html["error"] == "too_much_messages") {
+				$("#warning").html("Sorry, too much messages today");
+			} else if(html["answer"] == "error" && html["error"] == "no_data") {
+				$("#warning").html("Sorry, there was an error on the server");
+			} else {
+				$("#warning").html("Sorry, unknown server error");
+			}
+			document.getElementById("contactsBtn").disabled = false;
+
+		}
+	});
+
+}
+function clearWarning(id){
+	$("#"+id).removeClass("not_filled");
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+
+</body>
+</html>

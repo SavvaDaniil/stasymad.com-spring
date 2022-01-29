@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="headerFragment">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+    <meta id="_csrf" name="_csrf" th:content="${_csrf.token}"/>
+	<meta id="_csrf_header" name="_csrf_header" th:content="${_csrf.headerName}"/>
+	
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<meta http-equiv="Cache-Control" content="no-cache">
+
+	<title th:text="@{#!strings.isEmpty(title)} ? ${title} : 'Nastya Bagdasarova - Online Platform' "></title>
+	<link rel="stylesheet" href="/dist/css/bootstrap.min.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+	
+	<link href="/main.css" rel="stylesheet" type="text/css" />
+	<link href="/main_mobile.css" rel="stylesheet" type="text/css" />
+</head>
+
+</html>

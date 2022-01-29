@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{header :: headerFragment}"></head>
+<body>
+<div th:insert="~{menu :: copy}"></div>
+
+
+
+<div class="row section_payment">
+	<div class="col-12">
+		<div class="breadcamp">
+			<ul>
+				<li>Payment error</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="col-12">
+    <center>
+      <h5 class="desc"><b>An error occurred during the payment!</b>
+
+      </h5>
+    </center>
+
+  </div>
+</div>
+
+
+
+<div th:insert="~{footer :: footerFragment}"></div>
+</body>
+</html>

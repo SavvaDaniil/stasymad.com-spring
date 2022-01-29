@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+
+
+
+
+
+<div th:fragment="account_courseFragment(courseList)">
+
+	<div class="col-12 row block_content" th:each="accessActive : ${courseList}">
+		
+		<div class="col-12 col-lg-5 col-md-12 col-sm-12 videoContent">
+			<img th:src="@{${accessActive.posterSrc}}" class="img-fluid" />
+			<img src="/images/play.png" class="play"
+			th:attr="onclick=|getvideo('${accessActive.id_of_course}', ${accessActive.last_played_number})|" />
+		</div>
+		<div class="col-12 col-lg-7 col-md-12 col-sm-12 row">
+			<div class="info col-12 row">
+				<div class="col-12">
+					<h2 th:text="${accessActive.name_of_course}"></h2>
+					
+					<p th:utext="${accessActive.description_of_course}"></p>
+				</div>
+				
+				
+				<div class="col-12">
+					<p><font>Feed back: </font>
+						<button th:if="${accessActive.backActiveAccess != null}" class="btn btn-xs"
+						data-toggle="modal" data-target="#chatModal"
+						th:attr="onclick=|chatLoad('${accessActive.id_of_course}')|">
+						Open chat
+						</button>
+						
+						<button class="btn" th:if="${accessActive.backActiveAccess == null}"
+						th:attr="onclick=|add_to_cart('${accessActive.id_of_course}', 0, 1)|">In cart
+						</button>
+					</p>
+					<p><font>Purchase date:</font>
+						<font th:text="${accessActive.date_of_add_to_print}"></font>
+					</p>
+					<p><font>How many days: </font>
+						<font th:text="${accessActive.days}"></font>
+					</p>
+					<p>
+						<font>Activation date:</font>
+						<font th:text="${accessActive.date_of_activation != 0 ? accessActive.date_of_activation_to_print :
+						'No activation (start to watch for activation)'}"></font>
+					</p>
+					<p><font>Available until: </font>
+						<font th:text="${accessActive.date_must_be_used != 0 ? accessActive.date_must_be_used_to_print :
+						'No activation (start to watch for activation)'}"></font>
+					</p>
+					
+					<p class="prolong" th:if="${accessActive.prolong}">
+						<button class="btn"
+						th:attr="onclick=|add_to_cart('${accessActive.id_of_course}', 'acrobatics', 0, 1)|">Renew access
+						</button>
+					</p>
+					
+				</div>
+				
+				
+				
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

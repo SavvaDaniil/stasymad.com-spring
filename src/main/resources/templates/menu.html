@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+
+<body>
+
+
+
+	<div class="row" id="header" th:fragment="copy">
+		<div class="col-6 col-lg-1 col-md-1 col-sm-6" style="padding:0;margin:0;">
+			<img src="/images/logo.png" class="img-fluid logo" />
+		</div>
+		
+		<div class="col-6 d-md-none menu">
+			<button class="btn" onclick="menuMobile();">
+				<img src="/images/barsBlack.png" class="img-fluid" />
+			</button>
+		</div>
+		
+		<div class="col-6 d-none d-sm-none d-md-block headerMenu">
+			<ul>
+				<li th:classappend="${menu == 1} ? active"><a href="/">Main</a></li>
+				<li th:classappend="${menu == 2} ? active"><a href="/exotic">Exotic</a></li>
+				<li th:classappend="${menu == 3} ? active"><a href="/acrobatics">Acrobatics</a></li>
+				<li th:classappend="${menu == 4} ? active"><a href="/strip">Strip</a></li>
+				<li th:classappend="${menu == 5} ? active"><a href="/contacts">Contacts</a></li>
+			</ul>
+		</div>
+		<div class="col-1 d-none d-sm-none d-md-block"></div>
+		<div class="col-1 d-none d-sm-none d-md-block" style="padding:0;">
+			<a href="/cart">
+				<button class="btn cart">Cart</button>
+			</a>
+		</div>
+
+
+		
+		<div class="col-2 d-none d-sm-none d-md-block" th:if="${isAuth}">
+			<a href="/account">
+				<button class="btn">Account</button>
+			</a>
+		</div>
+		<div class="col-1 d-none d-sm-none d-md-block" th:if="${isAuth}">
+			<form th:action="@{/logout}" method="post">
+				<button class="btn">Logout</button>
+			</form>
+		</div>
+
+
+		<div class="col-1 d-none d-sm-none d-md-block" th:if="${isGuest}">
+			<a href="/login">
+				<button class="btn">Login</button>
+			</a>
+		</div>
+		<div class="col-1 d-none d-sm-none d-md-block" th:if="${isGuest}">
+			<a href="/registration" >
+				<button class="btn">Registration</button>
+			</a>
+		</div>
+		<div class="col-1 d-none d-sm-none d-md-block" th:if="${isGuest}"></div>
+		
+		
+		
+
+  <script>
+  
+  function logout(){
+	  var token = $("meta[name='_csrf']").attr("content");
+	  var header = $("meta[name='_csrf_header']").attr("content");
+	  	$.ajax({
+	  		type: "POST",
+	  		url:  "/logout",
+	  		cashe: false,
+	  		async:false,
+	        beforeSend: function(xhr) {
+	            xhr.setRequestHeader(header, token);
+	        },
+	  		error:function(){
+				alert("Sorry, error net connection");
+	  		},
+	  		success: function(html)
+	  		{
+	  			location.reload();
+	  		}
+	  	});
+  }
+  
+  function add_to_cart(id, back, operation){
+	  var token = $("meta[name='_csrf']").attr("content");
+	  var header = $("meta[name='_csrf_header']").attr("content");
+  	$.ajax({
+  		type: "POST",
+  		url:  "/cart/add",
+  		data: {
+  			"id_of_course":id,
+  			"isBack":back,
+  			"operation":operation
+  		},
+  		cashe: false,
+  		async:false,
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+  		error:function(){
+			alert("Sorry, error net connection");
+  		},
+  		success: function(html)
+  		{
+  			if(html["answer"] == "success"){
+  				animation_cart(0);
+  			} else if(html["answer"] == "error" && html["error"] == "quest"){
+  				location.href = "/login";
+  			} else if(html["answer"] == "error" && html["error"] == "already_done"){
+  				animation_cart(1);
+  			} else {
+  				alert("Sorry, unknown error on server!");
+  			}
+  		}
+  	});
+  }
+
+  function animation_cart(a){
+  	if(a == 0){
+  		$("#cart_add_success").addClass("active");
+  		setTimeout(function(){
+  			$("#cart_add_success").removeClass("active");
+  		},1000);
+  	} else if(a == 1){
+  		$("#cart_already_add").addClass("active");
+  		setTimeout(function(){
+  			$("#cart_already_add").removeClass("active");
+  		},1000);
+  	}
+
+  }
+  
+  
+  var menuMobileStatus = false;
+  function menuMobile(){
+  	if(menuMobileStatus){
+  		menuMobileStatus = false;
+  		$("#menuMobile").removeClass("active");
+  	} else {
+  		menuMobileStatus = true;
+  		$("#menuMobile").addClass("active");
+  	}
+  }
+  </script>
+  
+  
+		<div id="menuMobile">
+			<button class="btn" onclick="menuMobile();">
+				<img src="/images/barsBlack.png" class="img-fluid" />
+			</button>
+			<ul>
+				<li><a href="/">Main</a></li>
+				<li><a href="/exotic">Exotic</a></li>
+				<li><a href="/acrobatics">Acrobatics</a></li>
+				<li><a href="/strip">Strip</a></li>
+				<li><a href="/contacts">Contacts</a></li>
+			</ul>
+			<hr />
+			<ul th:if="${isAuth}">
+				<li><a href="/account">Account</a></li>
+				<li><a href="#" onclick="logout()">Logout</a></li>
+			</ul>
+			<ul th:if="${isGuest}">
+				<li><a href="/login">Login</a></li>
+				<li><a href="/registration">Registration</a></li>
+			</ul>
+		</div>
+  
+		
+		<div id="cart_add_success" class="cart_alert">
+			<p>Product added to cart successfully</p>
+		</div>
+		<div id="cart_already_add" class="cart_alert">
+			<p>Product has already been added to the cart</p>
+		</div>
+
+
+	</div>
+
+
+</body>
+</html>
